@@ -1,24 +1,99 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>Our School Games</title>
-    <meta charset="UTF-8">
-    <style>
-      body {
-        font-family: sans-serif;
-        text-align: center;
-        padding: 50px;
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fun Times Tables Game</title>
+  <style>
+    body {
+      font-family: 'Comic Sans MS', sans-serif;
+      background-color: #FFDDC1;
+      text-align: center;
+      padding: 20px;
+    }
+    h1 {
+      font-size: 48px;
+      color: #333;
+    }
+    .button {
+      font-size: 18px;
+      padding: 10px 20px;
+      margin: 5px;
+      background-color: #FFAA33;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 8px;
+    }
+    .question {
+      font-size: 36px;
+      margin: 20px 0;
+      color: #333;
+    }
+    #timer {
+      font-size: 24px;
+      margin: 10px;
+    }
+    #score {
+      font-size: 24px;
+      margin: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Fun Times Tables Game</h1>
+  <div id="timer">Time Left: 60s</div>
+  <div id="score">Score: 0</div>
+  <div class="question" id="question">Press Start to Begin</div>
+  <button class="button" onclick="startGame()">Start Game</button>
+  <button class="button" onclick="submitAnswer()">Submit</button><br>
+  <input type="number" id="answerInput" placeholder="Your answer">
+
+  <script>
+    let currentQuestion = {};
+    let score = 0;
+    let timeLeft = 60;
+    let timerInterval;
+
+    function getRandomQuestion() {
+      const a = Math.floor(Math.random() * 12) + 1;
+      const b = Math.floor(Math.random() * 12) + 1;
+      return { a: Math.max(a, b), b: Math.min(a, b), answer: a * b };
+    }
+
+    function startGame() {
+      score = 0;
+      timeLeft = 60;
+      document.getElementById("score").innerText = "Score: 0";
+      document.getElementById("timer").innerText = "Time Left: 60s";
+      nextQuestion();
+      clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        document.getElementById("timer").innerText = `Time Left: ${timeLeft}s`;
+        if (timeLeft <= 0) {
+          clearInterval(timerInterval);
+          document.getElementById("question").innerText = "Time's up!";
+        }
+      }, 1000);
+    }
+
+    function nextQuestion() {
+      currentQuestion = getRandomQuestion();
+      document.getElementById("question").innerText = `${currentQuestion.a} x ${currentQuestion.b} = ?`;
+      document.getElementById("answerInput").value = "";
+    }
+
+    function submitAnswer() {
+      const userAnswer = parseInt(document.getElementById("answerInput").value);
+      if (userAnswer === currentQuestion.answer) {
+        score++;
+        document.getElementById("score").innerText = `Score: ${score}`;
       }
-      h1 {
-        color: #2a7b9b;
+      if (timeLeft > 0) {
+        nextQuestion();
       }
-    </style>
-  </head>
-  <body>
-    <h1>Welcome to Our School Games Website!</h1>
-    <p>Click a game below to get started.</p>
-    <ul>
-      <li><a href="games/times-tables-game.html">Times Tables Game</a></li>
-    </ul>
-  </body>
+    }
+  </script>
+</body>
 </html>
