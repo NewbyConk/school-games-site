@@ -1,12 +1,4 @@
 <!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <title>Times Tables Game</title>
-</head>
-<body>
-  <h1>Times Tables Game</h1>
-  <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -79,14 +71,16 @@
   <div class="question" id="question">Select tables and press Start</div>
   <div id="feedback"></div>
   <div id="table-buttons"></div>
-  <button class="button" id="divisionToggle">Toggle Division</button>
-  <button class="button" id="muteToggle">🔊 Mute</button>
-  <button class="button" onclick="startGame()">Start Game</button><br>
+  <div id="controls">
+    <button class="button" id="divisionToggle">Toggle Division</button>
+    <button class="button" id="muteToggle">🔊 Mute</button>
+    <button class="button" id="startBtn" onclick="startGame()">Start Game</button>
+  </div>
   <input type="number" id="answerInput" placeholder="Your answer" autofocus>
   <button class="button" onclick="submitAnswer()">Submit</button>
 
   <div id="summary"></div>
-  <button class="button" id="playAgainBtn" style="display:none" onclick="startGame()">Play Again</button>
+  <button class="button" id="playAgainBtn" style="display:none" onclick="resetToMainMenu()">Play Again</button>
 
   <audio id="ding" src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg"></audio>
   <audio id="buzz" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
@@ -172,6 +166,9 @@
         alert("Please select at least one times table.");
         return;
       }
+      document.getElementById("table-buttons").style.display = "none";
+      document.getElementById("controls").style.display = "none";
+
       score = 0;
       timeLeft = 60;
       document.getElementById("score").innerText = "Score: 0";
@@ -236,11 +233,16 @@
       }
     }
 
+    function resetToMainMenu() {
+      document.getElementById("table-buttons").style.display = "block";
+      document.getElementById("controls").style.display = "block";
+      playAgainBtn.style.display = "none";
+      document.getElementById("question").innerText = "Select tables and press Start";
+      document.getElementById("feedback").innerText = "";
+      document.getElementById("summary").innerText = "";
+    }
+
     createTableButtons();
   </script>
-</body>
-</html>
-
-  <a href="../index.html">⬅ Back to Game Menu</a>
 </body>
 </html>
