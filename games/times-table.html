@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Times Tables Game</title>
+</head>
+<body>
+  <h1>Times Tables Game</h1>
+  <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fun Times Tables Game</title>
+  <style>
+    body {
+      font-family: 'Comic Sans MS', sans-serif;
+      background-color: #FFDDC1;
+      text-align: center;
+      padding: 20px;
+    }
+    h1 {
+      font-size: 48px;
+      color: #333;
+    }
+    .button {
+      font-size: 20px;
+      padding: 14px 24px;
+      margin: 6px;
+      background-color: #FFAA33;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 10px;
+    }
+    .active {
+      background-color: #77DD77 !important;
+    }
+    .question {
+      font-size: 36px;
+      margin: 20px 0;
+      color: #333;
+    }
+    #timer, #score, #feedback {
+      font-size: 26px;
+      margin: 10px;
+    }
+    #answerInput {
+      font-size: 24px;
+      padding: 10px;
+      width: 60%;
+      max-width: 300px;
+      margin: 10px auto;
+      display: block;
+    }
+    #answerInput.correct {
+      border: 4px solid green;
+    }
+    #answerInput.wrong {
+      border: 4px solid red;
+    }
+    #summary {
+      font-size: 28px;
+      margin-top: 20px;
+      color: #333;
+    }
+    @media (max-width: 600px) {
+      .button {
+        width: 80%;
+        font-size: 22px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>Fun Times Tables Game</h1>
+  <div id="timer">Time Left: 60s</div>
+  <div id="score">Score: 0</div>
+  <div class="question" id="question">Select tables and press Start</div>
+  <div id="feedback"></div>
+  <div id="table-buttons"></div>
+  <button class="button" id="divisionToggle">Toggle Division</button>
+  <button class="button" id="muteToggle">🔊 Mute</button>
+  <button class="button" onclick="startGame()">Start Game</button><br>
+  <input type="number" id="answerInput" placeholder="Your answer" autofocus>
+  <button class="button" onclick="submitAnswer()">Submit</button>
+
+  <div id="summary"></div>
+  <button class="button" id="playAgainBtn" style="display:none" onclick="startGame()">Play Again</button>
+
+  <audio id="ding" src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg"></audio>
+  <audio id="buzz" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
+  <audio id="countdown" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
+
+  <script>
+    let currentQuestion = {};
+    let score = 0;
+    let timeLeft = 60;
+    let timerInterval;
+    let activeTables = new Set();
+    let isDivision = false;
+    let isMuted = false;
+
+    const dingSound = document.getElementById("ding");
+    const buzzSound = document.getElementById("buzz");
+    const countdownSound = document.getElementById("countdown");
+    const answerInput = document.getElementById("answerInput");
+    const playAgainBtn = document.getElementById("playAgainBtn");
+
+    answerInput.addEventListener("keyup", function(e) {
+      if (e.key === "Enter") submitAnswer();
+    });
+
+    document.getElementById("divisionToggle").addEventListener("click", function() {
+      isDivision = !isDivision;
+      this.classList.toggle("active");
+    });
+
+    document.getElementById("muteToggle").addEventListener("click", function() {
+      isMuted = !isMuted;
+      this.innerText = isMuted ? "🔇 Unmute" : "🔊 Mute";
+    });
+
+    function createTableButtons() {
+      const container = document.getElementById("table-buttons");
+      for (let i = 1; i <= 12; i++) {
+        const btn = document.createElement("button");
+        btn.className = "button";
+        btn.innerText = `${i}x`;
+        btn.onclick = () => {
+          btn.classList.toggle("active");
+          if (activeTables.has(i)) {
+            activeTables.delete(i);
+          } else {
+            activeTables.add(i);
+          }
+        };
+        container.appendChild(btn);
+      }
+    }
+
+    function getRandomQuestion() {
+      if (activeTables.size === 0) return null;
+      const a = [...activeTables][Math.floor(Math.random() * activeTables.size)];
+      const b = Math.floor(Math.random() * 12) + 1;
+      if (isDivision && Math.random() < 0.5) {
+        return {
+          a: Math.max(a, b),
+          b: Math.min(a, b),
+          answer: a * b,
+          text: `${Math.max(a, b)} x ${Math.min(a, b)} = ?`
+        };
+      } else if (isDivision) {
+        return {
+          a: a * b,
+          b: a,
+          answer: b,
+          text: `${a * b} ÷ ${a} = ?`
+        };
+      } else {
+        return {
+          a: Math.max(a, b),
+          b: Math.min(a, b),
+          answer: a * b,
+          text: `${Math.max(a, b)} x ${Math.min(a, b)} = ?`
+        };
+      }
+    }
+
+    function startGame() {
+      if (activeTables.size === 0) {
+        alert("Please select at least one times table.");
+        return;
+      }
+      score = 0;
+      timeLeft = 60;
+      document.getElementById("score").innerText = "Score: 0";
+      document.getElementById("timer").innerText = "Time Left: 60s";
+      document.getElementById("summary").innerText = "";
+      playAgainBtn.style.display = "none";
+      nextQuestion();
+      clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        document.getElementById("timer").innerText = `Time Left: ${timeLeft}s`;
+        if (!isMuted && timeLeft <= 5 && timeLeft > 0) {
+          countdownSound.pause();
+          countdownSound.currentTime = 0;
+          countdownSound.play();
+        }
+        if (timeLeft <= 0) {
+          clearInterval(timerInterval);
+          document.getElementById("question").innerText = "Time's up!";
+          document.getElementById("summary").innerText = `Well done! Your final score is ${score}.`;
+          playAgainBtn.style.display = "inline-block";
+        }
+      }, 1000);
+    }
+
+    function nextQuestion() {
+      currentQuestion = getRandomQuestion();
+      if (!currentQuestion) return;
+      document.getElementById("question").innerText = currentQuestion.text;
+      document.getElementById("answerInput").value = "";
+      document.getElementById("feedback").innerText = "";
+      answerInput.className = "";
+      answerInput.focus();
+    }
+
+    function submitAnswer() {
+      const userAnswer = parseInt(answerInput.value);
+      if (userAnswer === currentQuestion.answer) {
+        score++;
+        document.getElementById("score").innerText = `Score: ${score}`;
+        answerInput.className = "correct";
+        document.getElementById("feedback").innerText = "Correct!";
+        if (!isMuted) {
+          dingSound.pause();
+          dingSound.currentTime = 0;
+          dingSound.play();
+        }
+        if (timeLeft > 0) nextQuestion();
+      } else {
+        answerInput.className = "wrong";
+        document.getElementById("feedback").innerText = `Wrong! The answer was ${currentQuestion.answer}`;
+        if (!isMuted) {
+          buzzSound.pause();
+          buzzSound.currentTime = 0;
+          buzzSound.play();
+        }
+        if (timeLeft > 0) {
+          setTimeout(() => {
+            nextQuestion();
+          }, 1000);
+        }
+      }
+    }
+
+    createTableButtons();
+  </script>
+</body>
+</html>
+
+  <a href="../index.html">⬅ Back to Game Menu</a>
+</body>
+</html>
