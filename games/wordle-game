@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Wordle for Kids</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f0f0;
+      text-align: center;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #333;
+    }
+
+    #difficulty-buttons button {
+      margin: 5px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    #game {
+      margin: 20px auto;
+      max-width: 350px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .row {
+      display: grid;
+      gap: 5px;
+    }
+
+    .tile {
+      width: 50px;
+      height: 50px;
+      font-size: 24px;
+      border: 2px solid #ccc;
+      background-color: white;
+      text-transform: uppercase;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .correct {
+      background-color: #6aaa64;
+      color: white;
+    }
+
+    .present {
+      background-color: #c9b458;
+      color: white;
+    }
+
+    .absent {
+      background-color: #787c7e;
+      color: white;
+    }
+
+    #message {
+      font-size: 18px;
+      margin-top: 10px;
+    }
+
+    #keyboard {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 5px;
+      max-width: 360px;
+      margin: 20px auto;
+    }
+
+    .key {
+      width: 30px;
+      height: 40px;
+      font-size: 18px;
+      background: #ddd;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .key.special {
+      width: 60px;
+    }
+
+    #play-again {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 18px;
+      display: none;
+      cursor: pointer;
+    }
+
+    @media (max-width: 480px) {
+      .tile {
+        width: 45px;
+        height: 45px;
+        font-size: 18px;
+      }
+
+      .key {
+        width: 28px;
+        height: 36px;
+        font-size: 16px;
+      }
+
+      .key.special {
+        width: 50px;
+      }
+
+      #keyboard {
+        gap: 4px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>Wordle for Kids</h1>
+
+  <div id="difficulty-buttons">
+    <button onclick="startGame(3)">KS1</button>
+    <button onclick="startGame(4)">LKS2</button>
+    <button onclick="startGame(5)">UKS2</button>
+  </div>
+
+  <div id="game"></div>
+  <div id="keyboard"></div>
+  <div id="message"></div>
+  <button id="play-again" onclick="window.location.reload()">Play Again</button>
+
+  <script>
+    const WORDS = {
+      3: ['cat','dog','sun','hat','pig','pen','cup','car','jam','run','man','bed','bus','bat','top','net','red','box','zip','web',
+          'lip','mat','leg','mud','toy','fan','hen','pan','dot','cap','tin','map','van','log','bun','tap','jug','fox','cow','egg',
+          'hop','win','ant','rat','owl','bay','kid','tag','yak','bee'],
+      4: ['frog','book','star','milk','coat','jump','tree','door','play','shoe','rain','lamp','girl','nest','card','fish','wind','rock','ball','clap',
+          'ring','hand','bake','look','blue','cake','bird','toad','sock','seed','drum','glow','farm','hill','coin','cold','warm','sand','flag','rope',
+          'tall','sink','fork','duck','leaf','pink','moon','wolf','wood','tent'],
+      5: ['apple','chair','grape','train','light','smile','cloud','flame','brick','plane','bread','water','piano','crown','tiger','pride','shine','house','mouse','brush',
+          'table','night','river','stars','plant','heart','stone','quick','climb','dance','beach','storm','chase','float','write','green','laugh','small','track','chalk',
+          'cabin','sound','clear','giant','speak','round','shelf','slide','smart']
+    };
+
+    let wordLength = 0;
+    let targetWord = '';
+    let currentRow = 0;
+    let currentGuess = '';
+    let gameOver = false;
+
+    const gameContainer = document.getElementById('game');
+    const keyboard = document.getElementById('keyboard');
+    const message = document.getElementById('message');
+    const playAgainBtn = document.getElementById('play-again');
+
+    function startGame(length) {
+      wordLength = length;
+      targetWord = WORDS[length][Math.floor(Math.random() * WORDS[length].length)];
+      currentRow = 0;
+      currentGuess = '';
+      gameOver = false;
+
+      document.getElementById('difficulty-buttons').style.display = 'none';
+      gameContainer.innerHTML = '';
+      keyboard.innerHTML = '';
+      playAgainBtn.style.display = 'none';
+      message.textContent = '';
+
+      createGrid();
+      createKeyboard();
+    }
+
+    function createGrid() {
+      gameContainer.style.gridTemplateRows = `repeat(6, 1fr)`;
+      for (let i = 0; i < 6; i++) {
+        const row = document.createElement('div');
+        row.className = 'row';
+        row.style.gridTemplateColumns = `repeat(${wordLength}, 1fr)`;
+        for (let j = 0; j < wordLength; j++) {
+          const tile = document.createElement('div');
+          tile.className = 'tile';
+          row.appendChild(tile);
+        }
+        gameContainer.appendChild(row);
+      }
+    }
+
+    function createKeyboard() {
+      const rows = [
+        'q w e r t y u i o p',
+        'a s d f g h j k l',
+        'enter z x c v b n m back'
+      ];
+      rows.forEach(line => {
+        line.split(' ').forEach(key => {
+          const button = document.createElement('button');
+          button.className = 'key';
+          button.textContent = key === 'back' ? '←' : key.toUpperCase();
+          button.dataset.key = key;
+          if (key === 'enter' || key === 'back') button.classList.add('special');
+          button.addEventListener('click', () => handleKeyPress({ key }));
+          keyboard.appendChild(button);
+        });
+        keyboard.appendChild(document.createElement('br'));
+      });
+    }
+
+    function showMessage(text) {
+      message.textContent = text;
+    }
+
+    function checkGuess() {
+      const guess = currentGuess.toLowerCase();
+      if (guess.length !== wordLength || !/^[a-z]+$/.test(guess)) {
+        showMessage(`Enter a valid ${wordLength}-letter word.`);
+        return;
+      }
+
+      const rowTiles = gameContainer.children[currentRow].children;
+      const target = targetWord.split('');
+      const guessLetters = guess.split('');
+      const usedIndices = [];
+
+      for (let i = 0; i < wordLength; i++) {
+        rowTiles[i].textContent = guessLetters[i];
+        if (guessLetters[i] === target[i]) {
+          rowTiles[i].classList.add('correct');
+          usedIndices.push(i);
+        }
+      }
+
+      for (let i = 0; i < wordLength; i++) {
+        if (rowTiles[i].classList.contains('correct')) continue;
+        const index = target.findIndex((letter, j) => letter === guessLetters[i] && !usedIndices.includes(j));
+        if (index !== -1) {
+          rowTiles[i].classList.add('present');
+          usedIndices.push(index);
+        } else {
+          rowTiles[i].classList.add('absent');
+        }
+      }
+
+      if (guess === targetWord) {
+        showMessage('🎉 You got it!');
+        gameOver = true;
+        playAgainBtn.style.display = 'inline-block';
+        return;
+      }
+
+      if (currentRow === 5) {
+        showMessage(`The word was: ${targetWord.toUpperCase()}`);
+        gameOver = true;
+        playAgainBtn.style.display = 'inline-block';
+        return;
+      }
+
+      currentRow++;
+      currentGuess = '';
+    }
+
+    function handleKeyPress(e) {
+      if (gameOver || wordLength === 0) return;
+
+      const key = e.key.toLowerCase();
+
+      if (key === 'enter') {
+        if (currentGuess.length === wordLength) checkGuess();
+      } else if (key === 'backspace' || key === 'back') {
+        if (currentGuess.length > 0) {
+          currentGuess = currentGuess.slice(0, -1);
+          const tile = gameContainer.children[currentRow].children[currentGuess.length];
+          tile.textContent = '';
+        }
+      } else if (/^[a-z]$/.test(key)) {
+        if (currentGuess.length < wordLength) {
+          const tile = gameContainer.children[currentRow].children[currentGuess.length];
+          tile.textContent = key;
+          currentGuess += key;
+        }
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyPress);
+  </script>
+</body>
+</html>
