@@ -56,6 +56,9 @@
       margin-top: 20px;
       color: #333;
     }
+    #game-screen {
+      display: none;
+    }
     @media (max-width: 600px) {
       .button {
         width: 80%;
@@ -66,21 +69,28 @@
 </head>
 <body>
   <h1>Fun Times Tables Game</h1>
-  <div id="timer">Time Left: 60s</div>
-  <div id="score">Score: 0</div>
-  <div class="question" id="question">Select tables and press Start</div>
-  <div id="feedback"></div>
-  <div id="table-buttons"></div>
-  <div id="controls">
-    <button class="button" id="divisionToggle">Toggle Division</button>
-    <button class="button" id="muteToggle">🔊 Mute</button>
-    <button class="button" id="startBtn" onclick="startGame()">Start Game</button>
-  </div>
-  <input type="number" id="answerInput" placeholder="Your answer" autofocus>
-  <button class="button" onclick="submitAnswer()">Submit</button>
 
-  <div id="summary"></div>
-  <button class="button" id="playAgainBtn" style="display:none" onclick="resetToMainMenu()">Play Again</button>
+  <div id="main-menu">
+    <div class="question">Select Your Tables, Then Press Start</div>
+    <div id="table-buttons"></div>
+    <div id="controls">
+      <button class="button" id="divisionToggle">Toggle Division</button>
+      <button class="button" id="muteToggle">🔊 Mute</button>
+      <button class="button" id="startBtn" onclick="startGame()">Start Game</button>
+    </div>
+  </div>
+
+  <div id="game-screen">
+    <div id="timer">Time Left: 60s</div>
+    <div id="score">Score: 0</div>
+    <div class="question" id="question"></div>
+    <div id="feedback"></div>
+    <input type="number" id="answerInput" placeholder="Your answer" autofocus>
+    <button class="button" onclick="submitAnswer()">Submit</button>
+    <button class="button" onclick="resetToMainMenu()">Go Back</button>
+    <div id="summary"></div>
+    <button class="button" id="playAgainBtn" style="display:none" onclick="startGame()">Play Again</button>
+  </div>
 
   <audio id="ding" src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg"></audio>
   <audio id="buzz" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
@@ -166,8 +176,8 @@
         alert("Please select at least one times table.");
         return;
       }
-      document.getElementById("table-buttons").style.display = "none";
-      document.getElementById("controls").style.display = "none";
+      document.getElementById("main-menu").style.display = "none";
+      document.getElementById("game-screen").style.display = "block";
 
       score = 0;
       timeLeft = 60;
@@ -234,10 +244,10 @@
     }
 
     function resetToMainMenu() {
-      document.getElementById("table-buttons").style.display = "block";
-      document.getElementById("controls").style.display = "block";
+      document.getElementById("main-menu").style.display = "block";
+      document.getElementById("game-screen").style.display = "none";
       playAgainBtn.style.display = "none";
-      document.getElementById("question").innerText = "Select tables and press Start";
+      document.getElementById("question").innerText = "Select Your Tables, Then Press Start";
       document.getElementById("feedback").innerText = "";
       document.getElementById("summary").innerText = "";
     }
