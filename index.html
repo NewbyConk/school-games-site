@@ -25,18 +25,23 @@
       cursor: pointer;
       border-radius: 8px;
     }
+    .active {
+      background-color: #77DD77 !important;
+    }
     .question {
       font-size: 36px;
       margin: 20px 0;
       color: #333;
     }
-    #timer {
+    #timer, #score, #feedback {
       font-size: 24px;
       margin: 10px;
     }
-    #score {
-      font-size: 24px;
-      margin: 10px;
+    #answerInput.correct {
+      border: 4px solid green;
+    }
+    #answerInput.wrong {
+      border: 4px solid red;
     }
   </style>
 </head>
@@ -44,24 +49,55 @@
   <h1>Fun Times Tables Game</h1>
   <div id="timer">Time Left: 60s</div>
   <div id="score">Score: 0</div>
-  <div class="question" id="question">Press Start to Begin</div>
-  <button class="button" onclick="startGame()">Start Game</button>
-  <button class="button" onclick="submitAnswer()">Submit</button><br>
+  <div class="question" id="question">Select tables and press Start</div>
+  <div id="feedback"></div>
+  <div id="table-buttons"></div>
+  <button class="button" onclick="startGame()">Start Game</button><br>
   <input type="number" id="answerInput" placeholder="Your answer">
+  <button class="button" onclick="submitAnswer()">Submit</button>
 
   <script>
     let currentQuestion = {};
     let score = 0;
     let timeLeft = 60;
     let timerInterval;
+    let activeTables = new Set();
+
+    const answerInput = document.getElementById("answerInput");
+    answerInput.addEventListener("keyup", function(e) {
+      if (e.key === "Enter") submitAnswer();
+    });
+
+    function createTableButtons() {
+      const container = document.getElementById("table-buttons");
+      for (let i = 1; i <= 12; i++) {
+        const btn = document.createElement("button");
+        btn.className = "button";
+        btn.innerText = `${i}x`;
+        btn.onclick = () => {
+          btn.classList.toggle("active");
+          if (activeTables.has(i)) {
+            activeTables.delete(i);
+          } else {
+            activeTables.add(i);
+          }
+        };
+        container.appendChild(btn);
+      }
+    }
 
     function getRandomQuestion() {
-      const a = Math.floor(Math.random() * 12) + 1;
+      if (activeTables.size === 0) return null;
+      const a = [...activeTables][Math.floor(Math.random() * activeTables.size)];
       const b = Math.floor(Math.random() * 12) + 1;
       return { a: Math.max(a, b), b: Math.min(a, b), answer: a * b };
     }
 
     function startGame() {
+      if (activeTables.size === 0) {
+        alert("Please select at least one times table.");
+        return;
+      }
       score = 0;
       timeLeft = 60;
       document.getElementById("score").innerText = "Score: 0";
@@ -80,20 +116,32 @@
 
     function nextQuestion() {
       currentQuestion = getRandomQuestion();
+      if (!currentQuestion) return;
       document.getElementById("question").innerText = `${currentQuestion.a} x ${currentQuestion.b} = ?`;
       document.getElementById("answerInput").value = "";
+      document.getElementById("feedback").innerText = "";
+      answerInput.className = "";
     }
 
     function submitAnswer() {
-      const userAnswer = parseInt(document.getElementById("answerInput").value);
+      const userAnswer = parseInt(answerInput.value);
       if (userAnswer === currentQuestion.answer) {
         score++;
         document.getElementById("score").innerText = `Score: ${score}`;
+        answerInput.className = "correct";
+        document.getElementById("feedback").innerText = "Correct!";
+      } else {
+        answerInput.className = "wrong";
+        document.getElementById("feedback").innerText = `Wrong! The answer was ${currentQuestion.answer}`;
       }
       if (timeLeft > 0) {
-        nextQuestion();
+        setTimeout(() => {
+          nextQuestion();
+        }, 1000);
       }
     }
+
+    createTableButtons();
   </script>
 </body>
 </html>
